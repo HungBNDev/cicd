@@ -29,17 +29,24 @@ pipeline {
     githubPush()
   }
 
+  options {
+    throttleJobProperty(
+      throttleEnabled: true
+    )
+  }
+
   stages {
     stage('Checkout') {
       steps {
         checkout scmGit(
           branches: [
-            [name: '*/develop']
+            [name: '*/main'],
+            [name: '**']
           ],
           extensions: [],
           userRemoteConfigs: [
             [
-              credentialsId: 'ssh_key',
+              credentialsId: 'jenkinsci_github_app',
               url: 'https://github.com/HungBNDev/TTO.git'
             ]
           ]
@@ -50,17 +57,15 @@ pipeline {
     stage('Running') {
       steps {
         setBuildStatus("Compiling", "JenkinsCI", "pending");
-        sh '''
-            docker compose run web rails test
-        '''
+        sh "docker compose up --build --abort-on-container-exit --exit-code-from test"
+        sh "docker compose down"
+        sh "docker compose rm --force --volumes --stop"
       }
     }
 
     stage('Deploy') {
       steps {
-        sh '''
-            BRANCH=. bundle exec cap staging deploy
-        '''
+        echo 'Deploying....'
       }
     }
   }
@@ -74,3 +79,4 @@ pipeline {
     }
   }
 }
+
