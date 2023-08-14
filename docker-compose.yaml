@@ -1,0 +1,20 @@
+version: "3.7"
+
+services:
+  jenkins:
+    platform: linux/amd64
+    build: .
+    user: jenkins
+    container_name: jenkins
+    ports:
+      - 8080:8080
+      - 50000:50000
+    volumes:
+      - jenkins_data:/var/jenkins_home
+      - /usr/local/bin/docker:/usr/local/bin/docker
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/bin/docker-compose:/usr/bin/docker-compose
+    environment:
+      DOCKER_DEFAULT_PLATFORM: linux/amd64
+volumes:
+  jenkins_data:
